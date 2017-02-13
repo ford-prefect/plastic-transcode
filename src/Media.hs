@@ -15,21 +15,18 @@ data Profile = Profile { profileTarget   :: T.Text
                        , profileName     :: Maybe T.Text
                        , profileCategory :: Maybe T.Text
                        } deriving (Eq, Generic, Read, Show)
-derivePersistField "Profile"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 7, constructorTagModifier = camelTo2 '-'}
   ''Profile)
 
 data Container = MP4 | MKV | WEBM
                  deriving (Eq, Generic, Read, Show)
-derivePersistField "Container"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 9, constructorTagModifier = camelTo2 '-'}
   ''Container)
 
 data VideoCodec = MPEG4 | H264 | H265 | VP8 | VP9
                  deriving (Eq, Generic, Read, Show)
-derivePersistField "VideoCodec"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelTo2 '-'}
   ''VideoCodec)
@@ -44,14 +41,12 @@ data VideoParams = VideoParams { videoParamsCodec      :: Maybe VideoCodec
                                , videoParamsExtra      :: M.Map T.Text T.Text
                                , videoParamsPreset     :: Maybe String
                                } deriving (Eq, Generic, Read, Show)
-derivePersistField "VideoParams"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}
   ''VideoParams)
 
 data AudioCodec = AAC | FLAC | MP3 | MPEG2 | OPUS | VORBIS
                  deriving (Eq, Generic, Read, Show)
-derivePersistField "AudioCodec"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelTo2 '-'}
   ''AudioCodec)
@@ -65,7 +60,6 @@ data AudioParams = AudioParams { audioParamsCodec    :: Maybe AudioCodec
                                , audioParamsExtra    :: M.Map T.Text T.Text
                                , audioParamsPreset   :: Maybe String
                                } deriving (Eq, Generic, Read, Show)
-derivePersistField "AudioParams"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}
   ''AudioParams)

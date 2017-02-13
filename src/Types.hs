@@ -27,6 +27,7 @@ $(deriveJSON
 
 data JobState = Queued
               | InProgress { progressPercent :: Int }
+              | Cancelled
               | Complete
               deriving (Eq, Generic, Read, Show)
 derivePersistField "JobState"

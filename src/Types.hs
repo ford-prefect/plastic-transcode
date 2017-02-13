@@ -19,7 +19,7 @@ data JobParams = JobParams { inputUri  :: String
                            , video     :: Maybe VideoParams
                            , audio     :: Maybe AudioParams
                            } deriving (Eq, Generic, Read, Show)
-derivePersistField "JobParams"
+derivePersistFieldJSON "JobParams"
 $(deriveJSON
   defaultOptions { fieldLabelModifier     = camelTo2 '-',
                    constructorTagModifier = camelTo2 '-' }

@@ -14,9 +14,9 @@ import Servant
 import Models
 import Types
 
-type JobAPI = Get '[JSON] [Entity Job]
-         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)
-         :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job))
+type JobAPI = Get '[JSON] [Entity Job]                                   -- GET /
+         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)        -- POST /
+         :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job)) -- GET /<ID>
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH

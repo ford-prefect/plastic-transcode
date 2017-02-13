@@ -12,6 +12,7 @@ import Database.Persist.Sql
 import Servant
 
 import Models
+import Types
 
 type JobAPI = Get '[JSON] [Entity Job]
          :<|> ReqBody '[JSON] Job :> Post '[JSON] (Key Job)
@@ -30,7 +31,10 @@ jobServer pool = getJobsH
     getJobs = runSqlPersistMPool (selectList [] []) pool
 
     newJob :: Job -> IO (Key Job)
-    newJob job = runSqlPersistMPool (insert job) pool
+    newJob job = flip runSqlPersistMPool pool $ do
+                   jobId <- insert job
+                   insert $ QueueItem jobId Queued
+                   return jobId
 
     getJob :: Key Job -> IO (Maybe (Entity Job))
     -- We use 'selectFirst' instead of get as a shortcut to get an Entity Job

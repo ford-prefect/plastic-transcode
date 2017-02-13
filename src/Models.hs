@@ -15,36 +15,43 @@ import Data.Aeson.TH
 import Data.Aeson.Types as AT
 import Data.Char (isLower, toLower)
 import Data.Data
-import Data.HashMap.Strict (keys)
-import Data.List (intercalate, sort)
-import Data.Text (Text, unpack)
+import Data.List (sort)
+import qualified Data.HashMap.Strict as HM (keys)
+import qualified Data.Text as T
 import Database.Persist
 import Database.Persist.TH
 import GHC.Generics
 
+import Media
 import Types
 import Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Job
-  inputUri    String
-  outputUri   String
-  profile     Profile Maybe
-  container   Container Maybe
-  videoParams VideoParams Maybe
-  audioParams AudioParams Maybe
+  inputUri  String
+  outputUri String
+  profile   Profile Maybe
+  container Container Maybe
+  video     VideoParams Maybe
+  audio     AudioParams Maybe
   deriving Data Eq Generic Show
+
+QueueItem
+  job   JobId
+  state JobState
+  deriving Eq Generic Show
 |]
 
--- We don't use Peristent's built-in serialisation for Job because we want to
--- customise the translation of record fields to JSON object keys, as well as
--- do extra validation.
-
+-- Encode the 'id' into our Entity's JSON
 instance ToJSON (Entity Job) where
   toJSON = entityIdToJSON
 
 instance FromJSON (Entity Job) where
   parseJSON = entityIdFromJSON
+
+-- We don't use Peristent's built-in serialisation for `Job` because we want to
+-- customise the translation of record fields to JSON object keys, as well as
+-- do extra validation.
 
 instance ToJSON Job where
   toJSON = genericToJSON jobDefaultOptions
@@ -61,7 +68,7 @@ instance FromJSON Job where
       -- Make sure the set of JSON object keys is exactly the same as the fields in our object
       keysMatchRecords (Object o) d =
         let
-          objKeys   = sort . fmap unpack . keys
+          objKeys   = sort . fmap T.unpack . HM.keys
           recFields = sort . fmap (fieldLabelModifier jobDefaultOptions) . constrFields . toConstr
         in
           objKeys o == recFields d

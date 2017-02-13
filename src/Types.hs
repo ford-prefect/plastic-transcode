@@ -5,12 +5,12 @@
 module Types where
 
 import Data.Aeson.TH
+import Data.Aeson.Types (camelTo2)
 import Data.Aeson.Types as AT
 import Database.Persist.TH
 import GHC.Generics
 
 import Media
-import Utils
 
 data JobParams = JobParams { inputUri  :: String
                            , outputUri :: String
@@ -21,8 +21,8 @@ data JobParams = JobParams { inputUri  :: String
                            } deriving (Eq, Generic, Read, Show)
 derivePersistField "JobParams"
 $(deriveJSON
-  defaultOptions { fieldLabelModifier     = camelToLower,
-                   constructorTagModifier = camelToLower }
+  defaultOptions { fieldLabelModifier     = camelTo2 '-',
+                   constructorTagModifier = camelTo2 '-' }
   ''JobParams)
 
 data JobState = Queued
@@ -31,7 +31,7 @@ data JobState = Queued
               deriving (Eq, Generic, Read, Show)
 derivePersistField "JobState"
 $(deriveJSON
-  defaultOptions { fieldLabelModifier     = camelToLower,
-                   constructorTagModifier = camelToLower,
+  defaultOptions { fieldLabelModifier     = camelTo2 '-',
+                   constructorTagModifier = camelTo2 '-',
                    sumEncoding            = AT.UntaggedValue }
   ''JobState)

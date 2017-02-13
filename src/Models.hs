@@ -23,7 +23,6 @@ import Database.Persist.TH
 import GHC.Generics
 
 import Types
-import Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Job
@@ -32,7 +31,7 @@ Job
   deriving Eq Generic Show
 |]
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = camelToLower . drop 3, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = AT.camelTo2 '-' . drop 3, constructorTagModifier = AT.camelTo2 '-'}
   ''Job)
 
 -- Encode the 'id' into our Entity's JSON

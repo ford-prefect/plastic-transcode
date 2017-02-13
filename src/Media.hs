@@ -4,13 +4,12 @@
 module Media where
 
 import Data.Aeson.TH
+import Data.Aeson.Types (camelTo2)
 import Data.Char (toLower)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Database.Persist.TH
 import GHC.Generics
-
-import Utils
 
 data Profile = Profile { profileTarget   :: T.Text
                        , profileName     :: Maybe T.Text
@@ -18,21 +17,21 @@ data Profile = Profile { profileTarget   :: T.Text
                        } deriving (Eq, Generic, Read, Show)
 derivePersistField "Profile"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = map toLower . drop 7, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = map toLower . drop 7, constructorTagModifier = camelTo2 '-'}
   ''Profile)
 
 data Container = MP4 | MKV | WEBM
                  deriving (Eq, Generic, Read, Show)
 derivePersistField "Container"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = map toLower . drop 9, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = map toLower . drop 9, constructorTagModifier = camelTo2 '-'}
   ''Container)
 
 data VideoCodec = MPEG4 | H264 | H265 | VP8 | VP9
                  deriving (Eq, Generic, Read, Show)
 derivePersistField "VideoCodec"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelTo2 '-'}
   ''VideoCodec)
 
 -- Unless otherwise specified, a Nothing parameter impliess passthrough (i.e. use source value)
@@ -47,14 +46,14 @@ data VideoParams = VideoParams { videoParamsCodec      :: Maybe VideoCodec
                                } deriving (Eq, Generic, Read, Show)
 derivePersistField "VideoParams"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = camelToLower . drop 11, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}
   ''VideoParams)
 
 data AudioCodec = AAC | FLAC | MP3 | MPEG2 | OPUS | VORBIS
                  deriving (Eq, Generic, Read, Show)
 derivePersistField "AudioCodec"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelTo2 '-'}
   ''AudioCodec)
 
 -- Unless otherwise specified, a Nothing parameter impliess passthrough (i.e. use source value)
@@ -68,5 +67,5 @@ data AudioParams = AudioParams { audioParamsCodec    :: Maybe AudioCodec
                                } deriving (Eq, Generic, Read, Show)
 derivePersistField "AudioParams"
 $(deriveJSON
-  defaultOptions{fieldLabelModifier = camelToLower . drop 11, constructorTagModifier = camelToLower}
+  defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}
   ''AudioParams)

@@ -19,7 +19,6 @@ library
                      , Media
                      , Models
                      , Types
-                     , Utils
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , containers

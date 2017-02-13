@@ -15,7 +15,7 @@ import Models
 import Types
 
 type JobAPI = Get '[JSON] [Entity Job]
-         :<|> ReqBody '[JSON] Job :> Post '[JSON] (Key Job)
+         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)
          :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job))
 
 jobServer :: ConnectionPool -> Server JobAPI
@@ -30,8 +30,8 @@ jobServer pool = getJobsH
     getJobs :: IO [Entity Job]
     getJobs = runSqlPersistMPool (selectList [] []) pool
 
-    newJob :: Job -> IO (Key Job)
-    newJob job = runSqlPersistMPool (insert job) pool
+    newJob :: JobParams -> IO (Key Job)
+    newJob params = runSqlPersistMPool (insert $ Job params Queued) pool
 
     getJob :: Key Job -> IO (Maybe (Entity Job))
     -- We use 'selectFirst' instead of get as a shortcut to get an Entity Job

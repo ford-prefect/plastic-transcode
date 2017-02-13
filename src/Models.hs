@@ -22,21 +22,18 @@ import Database.Persist
 import Database.Persist.TH
 import GHC.Generics
 
-import Media
 import Types
 import Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Job
-  inputUri  String
-  outputUri String
-  profile   Profile Maybe
-  container Container Maybe
-  video     VideoParams Maybe
-  audio     AudioParams Maybe
-  state     JobState
+  config JobParams
+  state  JobState
   deriving Eq Generic Show
 |]
+$(deriveJSON
+  defaultOptions{fieldLabelModifier = camelToLower . drop 3, constructorTagModifier = camelToLower}
+  ''Job)
 
 -- Encode the 'id' into our Entity's JSON
 instance ToJSON (Entity Job) where
@@ -44,17 +41,3 @@ instance ToJSON (Entity Job) where
 
 instance FromJSON (Entity Job) where
   parseJSON = entityIdFromJSON
-
--- We need custom JSON parsing to deal with the default JobState
-instance ToJSON Job where
-  toJSON = genericToJSON jobDefaultOptions
-
-instance FromJSON Job where
-  parseJSON (Object o) = genericParseJSON jobDefaultOptions (Object o')
-    where
-      o' = HM.alter (<|> (Just $ toJSON Queued)) "state" o
-  -- Fallback to default failure modes if the value is not an object
-  parseJSON v          = genericParseJSON jobDefaultOptions v
-
-jobDefaultOptions :: AT.Options
-jobDefaultOptions = AT.defaultOptions { fieldLabelModifier = camelToLower . drop 3 }

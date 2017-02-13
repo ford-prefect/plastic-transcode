@@ -31,10 +31,7 @@ jobServer pool = getJobsH
     getJobs = runSqlPersistMPool (selectList [] []) pool
 
     newJob :: Job -> IO (Key Job)
-    newJob job = flip runSqlPersistMPool pool $ do
-                   jobId <- insert job
-                   insert $ QueueItem jobId Queued
-                   return jobId
+    newJob job = runSqlPersistMPool (insert job) pool
 
     getJob :: Key Job -> IO (Maybe (Entity Job))
     -- We use 'selectFirst' instead of get as a shortcut to get an Entity Job

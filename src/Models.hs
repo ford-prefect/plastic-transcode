@@ -3,18 +3,20 @@
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 
 module Models where
 
+import Control.Applicative
 import Data.Aeson
 import Data.Aeson.TH
 import Data.Aeson.Types as AT
 import Data.Char (isLower, toLower)
 import Data.List (sort)
-import qualified Data.HashMap.Strict as HM (keys)
+import qualified Data.HashMap.Strict as HM (alter)
 import qualified Data.Text as T
 import Database.Persist
 import Database.Persist.TH
@@ -32,21 +34,9 @@ Job
   container Container Maybe
   video     VideoParams Maybe
   audio     AudioParams Maybe
-  deriving Eq Generic Show
-
-QueueItem
-  job   JobId
-  state JobState
+  state     JobState
   deriving Eq Generic Show
 |]
-
-$(deriveJSON
-  defaultOptions{fieldLabelModifier = camelToLower . drop 3, constructorTagModifier = camelToLower }
-  ''Job)
-
-$(deriveJSON
-  defaultOptions{fieldLabelModifier = camelToLower . drop 9, constructorTagModifier = camelToLower }
-  ''QueueItem)
 
 -- Encode the 'id' into our Entity's JSON
 instance ToJSON (Entity Job) where
@@ -54,3 +44,17 @@ instance ToJSON (Entity Job) where
 
 instance FromJSON (Entity Job) where
   parseJSON = entityIdFromJSON
+
+-- We need custom JSON parsing to deal with the default JobState
+instance ToJSON Job where
+  toJSON = genericToJSON jobDefaultOptions
+
+instance FromJSON Job where
+  parseJSON (Object o) = genericParseJSON jobDefaultOptions (Object o')
+    where
+      o' = HM.alter (<|> (Just $ toJSON Queued)) "state" o
+  -- Fallback to default failure modes if the value is not an object
+  parseJSON v          = genericParseJSON jobDefaultOptions v
+
+jobDefaultOptions :: AT.Options
+jobDefaultOptions = AT.defaultOptions { fieldLabelModifier = camelToLower . drop 3 }

@@ -25,7 +25,7 @@ import GHC.Generics
 import Types
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Job
+Job sql=jobs
   config JobParams
   state  JobState
   deriving Eq Generic Show

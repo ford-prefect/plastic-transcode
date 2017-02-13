@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE TemplateHaskell    #-}
 
@@ -6,7 +5,6 @@ module Media where
 
 import Data.Aeson.TH
 import Data.Char (toLower)
-import Data.Data
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Database.Persist.TH
@@ -17,21 +15,21 @@ import Utils
 data Profile = Profile { profileTarget   :: T.Text
                        , profileName     :: Maybe T.Text
                        , profileCategory :: Maybe T.Text
-                       } deriving (Data, Eq, Generic, Read, Show)
+                       } deriving (Eq, Generic, Read, Show)
 derivePersistField "Profile"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 7, constructorTagModifier = camelToLower}
   ''Profile)
 
 data Container = MP4 | MKV | WEBM
-                 deriving (Data, Eq, Generic, Read, Show)
+                 deriving (Eq, Generic, Read, Show)
 derivePersistField "Container"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 9, constructorTagModifier = camelToLower}
   ''Container)
 
 data VideoCodec = MPEG4 | H264 | H265 | VP8 | VP9
-                 deriving (Data, Eq, Generic, Read, Show)
+                 deriving (Eq, Generic, Read, Show)
 derivePersistField "VideoCodec"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelToLower}
@@ -46,14 +44,14 @@ data VideoParams = VideoParams { videoParamsCodec      :: Maybe VideoCodec
                                , videoParamsBitrate    :: Maybe Int
                                , videoParamsExtra      :: M.Map T.Text T.Text
                                , videoParamsPreset     :: Maybe String
-                               } deriving (Data, Eq, Generic, Read, Show)
+                               } deriving (Eq, Generic, Read, Show)
 derivePersistField "VideoParams"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = camelToLower . drop 11, constructorTagModifier = camelToLower}
   ''VideoParams)
 
 data AudioCodec = AAC | FLAC | MP3 | MPEG2 | OPUS | VORBIS
-                 deriving (Data, Eq, Generic, Read, Show)
+                 deriving (Eq, Generic, Read, Show)
 derivePersistField "AudioCodec"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelToLower}
@@ -67,7 +65,7 @@ data AudioParams = AudioParams { audioParamsCodec    :: Maybe AudioCodec
                                , audioParamsBitrate  :: Maybe Int -- Nothing => VBR
                                , audioParamsExtra    :: M.Map T.Text T.Text
                                , audioParamsPreset   :: Maybe String
-                               } deriving (Data, Eq, Generic, Read, Show)
+                               } deriving (Eq, Generic, Read, Show)
 derivePersistField "AudioParams"
 $(deriveJSON
   defaultOptions{fieldLabelModifier = camelToLower . drop 11, constructorTagModifier = camelToLower}

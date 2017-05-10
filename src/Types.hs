@@ -25,10 +25,21 @@ $(deriveJSON
                    constructorTagModifier = camelTo2 '-' }
   ''JobParams)
 
+data JobResult = Success
+               | Error String
+               deriving (Eq, Generic, Read, Show)
+
+derivePersistField "JobResult"
+$(deriveJSON
+  defaultOptions { fieldLabelModifier     = camelTo2 '-',
+                   constructorTagModifier = camelTo2 '-',
+                   sumEncoding            = AT.UntaggedValue }
+  ''JobResult)
+
 data JobState = Queued
               | InProgress { progressPercent :: Int }
               | Cancelled
-              | Complete
+              | Complete { result :: JobResult }
               deriving (Eq, Generic, Read, Show)
 derivePersistField "JobState"
 $(deriveJSON

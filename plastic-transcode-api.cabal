@@ -36,7 +36,7 @@ executable plastic-transcode-api-exe
   build-depends:       base
                      , monad-logger
                      , plastic-transcode-api
-                     , persistent-sqlite
+                     , persistent-postgresql
                      , servant-server
                      , warp
   default-language:    Haskell2010

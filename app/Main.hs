@@ -5,7 +5,7 @@
 module Main where
 
 import Control.Monad.Logger (runStderrLoggingT)
-import Database.Persist.Sqlite
+import Database.Persist.Postgresql
 import Network.Wai.Handler.Warp
 import Servant
 
@@ -22,6 +22,6 @@ app pool = serve api $ jobServer pool
 
 main :: IO ()
 main = do
-  pool <- runStderrLoggingT $ createSqlitePool "sqlite.db" 1
+  pool <- runStderrLoggingT $ createPostgresqlPool "user=arun dbname=transcode" 1
   runSqlPool (runMigration migrateAll) pool
   run 8000 $ app pool

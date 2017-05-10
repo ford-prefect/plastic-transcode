@@ -8,7 +8,6 @@ import Data.Aeson.Types (camelTo2)
 import Data.Char (toLower)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
-import Database.Persist.TH
 import GHC.Generics
 
 data Profile = Profile { profileTarget   :: T.Text

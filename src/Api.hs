@@ -7,8 +7,11 @@ module Api
     , jobServer
     ) where
 
+import Data.Maybe (listToMaybe)
+
 import Control.Monad.IO.Class (liftIO)
 import Database.Persist.Sql
+import qualified Database.Esqueleto as E
 import Servant
 
 import Models
@@ -17,15 +20,18 @@ import Types
 type JobAPI = Get '[JSON] [Entity Job]                                   -- GET /
          :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)        -- POST /
          :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job)) -- GET /<ID>
+         :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))              -- GET /dequeue
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH
             :<|> newJobH
             :<|> getJobH
+            :<|> dqJobH
   where
     getJobsH = liftIO getJobs
     newJobH  = liftIO . newJob
     getJobH  = liftIO . getJob
+    dqJobH   = liftIO dqJob
 
     getJobs :: IO [Entity Job]
     getJobs = runSqlPersistMPool (selectList [] []) pool
@@ -37,3 +43,21 @@ jobServer pool = getJobsH
     -- We use 'selectFirst' instead of get as a shortcut to get an Entity Job
     -- (which has the id), rather than 'get' which gives us a Job.
     getJob id = runSqlPersistMPool (selectFirst [JobId ==. id] []) pool
+
+    dqJob :: IO (Maybe (Entity Job))
+    dqJob = runSqlPersistMPool doDq pool
+      where
+        doDq = do
+          -- FIXME: we want to make sure this is FIFO
+          job <- fmap listToMaybe $
+                   E.select $
+                   E.from $ \j -> do
+                     E.where_ $ (j E.^. JobState) E.==. E.val Queued
+                     E.limit 1
+                     E.locking E.ForUpdate
+                     return j
+          case job of
+            Nothing -> return Nothing
+            Just j  -> do
+              update (entityKey j) [JobState =. InProgress 0]
+              return $ Just j { entityVal = (entityVal j) { jobState = InProgress 0 } }

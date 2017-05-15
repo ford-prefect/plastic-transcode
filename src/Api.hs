@@ -21,17 +21,20 @@ type JobAPI = Get '[JSON] [Entity Job]                                   -- GET 
          :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)        -- POST /
          :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job)) -- GET /<ID>
          :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))              -- GET /dequeue
+         :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState :> PatchNoContent '[JSON] NoContent -- PATCH /<ID>
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH
             :<|> newJobH
             :<|> getJobH
             :<|> dqJobH
+            :<|> updateJobStateH
   where
-    getJobsH = liftIO getJobs
-    newJobH  = liftIO . newJob
-    getJobH  = liftIO . getJob
-    dqJobH   = liftIO dqJob
+    getJobsH            = liftIO getJobs
+    newJobH             = liftIO . newJob
+    getJobH             = liftIO . getJob
+    dqJobH              = liftIO dqJob
+    updateJobStateH job = liftIO . updateJobState job
 
     getJobs :: IO [Entity Job]
     getJobs = runSqlPersistMPool (selectList [] []) pool
@@ -61,3 +64,8 @@ jobServer pool = getJobsH
             Just j  -> do
               update (entityKey j) [JobState =. InProgress 0]
               return $ Just j { entityVal = (entityVal j) { jobState = InProgress 0 } }
+
+    updateJobState :: Key Job -> JobState -> IO NoContent
+    updateJobState id newState = do
+      runSqlPersistMPool (update id [JobState =. newState]) pool
+      return NoContent

@@ -21,7 +21,8 @@ type JobAPI = Get '[JSON] [Entity Job]                                   -- GET 
          :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)        -- POST /
          :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job)) -- GET /<ID>
          :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))              -- GET /dequeue
-         :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState :> PatchNoContent '[JSON] NoContent -- PATCH /<ID>
+         :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState
+                                     :> PatchNoContent '[JSON] NoContent -- PATCH /<ID>
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH

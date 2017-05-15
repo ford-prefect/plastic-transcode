@@ -30,7 +30,14 @@ Clients get the following API:
    should return incomplete jobs, perhaps?). Each of jobis also represented by
    a JSON object as in the queue 
 
-### The Job object
+## Worker API
+
+ * Dequeue a job: Pick up a job off the queue with GET on /jobs/dequeue
+
+ * Update job status: Set new status by sending a JSON encoded JobState object
+   with a PATCH request on /jobs/id
+
+## The Job object
 
 The job object that is passed to the POST request, or queried by GET requests,
 is essentially the same. The only difference is that at the time of the POST

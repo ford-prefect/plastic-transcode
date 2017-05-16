@@ -24,7 +24,7 @@ Clients get the following API:
  * Query a job: GET request on /jobs/id will return a JSON object as above,
    with the various job parameters and the current job state.
 
- * Cancel a job: DELETE request on /jobs/id will cause the job to be cancelled.
+ * Cancel a job: For now, PATCH request on /jobs/id with state = Cancelled
 
  * Query all jobs: GET request on /jobs will return all jobs (FIXME: this
    should return incomplete jobs, perhaps?). Each of jobis also represented by

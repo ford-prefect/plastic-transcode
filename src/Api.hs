@@ -44,9 +44,7 @@ jobServer pool = getJobsH
     newJob params = runSqlPersistMPool (insert $ Job params Queued) pool
 
     getJob :: Key Job -> IO (Maybe (Entity Job))
-    -- We use 'selectFirst' instead of get as a shortcut to get an Entity Job
-    -- (which has the id), rather than 'get' which gives us a Job.
-    getJob id = runSqlPersistMPool (selectFirst [JobId ==. id] []) pool
+    getJob id = runSqlPersistMPool (fmap (Entity id) <$> get id) pool
 
     dqJob :: IO (Maybe (Entity Job))
     dqJob = runSqlPersistMPool doDq pool

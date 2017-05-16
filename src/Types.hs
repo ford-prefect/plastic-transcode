@@ -37,7 +37,7 @@ $(deriveJSON
   ''JobResult)
 
 data JobState = Queued
-              | InProgress { progressPercent :: Int }
+              | InProgress { progressPercent :: Double }
               | Cancelled
               | Complete { result :: JobResult }
               deriving (Eq, Generic, Read, Show)

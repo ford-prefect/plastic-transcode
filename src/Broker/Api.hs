@@ -17,12 +17,12 @@ import Servant
 import Broker.Models
 import Broker.Types
 
-type JobAPI = Get '[JSON] [Entity Job]                                     -- GET /
-         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)          -- POST /
-         :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job))   -- GET /<ID>
-         :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))                -- GET /dequeue
+type JobAPI = Get '[JSON] [Entity Job]                             -- GET /
+         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)  -- POST /
+         :<|> Capture "id" (Key Job) :> Get '[JSON] (Entity Job)   -- GET /<ID>
+         :<|> "dequeue" :> Get '[JSON] (Entity Job)                -- GET /dequeue
          :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState
-                                     :> Patch '[JSON] (Maybe (Entity Job)) -- PATCH /<ID>
+                                     :> Patch '[JSON] (Entity Job) -- PATCH /<ID>
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH
@@ -73,9 +73,9 @@ jobServer pool = getJobsH
           update (entityKey j) [JobState =. newState]
           return $ Just j { entityVal = (entityVal j){ jobState = newState } }
 
-    with404 :: IO (Maybe a) -> Handler (Maybe a)
+    with404 :: IO (Maybe a) -> Handler a
     with404 f = do
       v <- liftIO f
       case v of
-        Just _  -> return v
+        Just v' -> return v'
         Nothing -> throwError err404

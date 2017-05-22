@@ -33,8 +33,8 @@ jobServer pool = getJobsH
   where
     getJobsH            = liftIO getJobs
     newJobH             = liftIO . newJob
-    getJobH             = liftIO . getJob
-    dqJobH              = liftIO dqJob
+    getJobH             = with404 . getJob
+    dqJobH              = with404 dqJob
     updateJobStateH job = liftIO . updateJobState job
 
     getJobs :: IO [Entity Job]
@@ -68,3 +68,10 @@ jobServer pool = getJobsH
     updateJobState id newState = do
       runSqlPersistMPool (update id [JobState =. newState]) pool
       return NoContent
+
+    with404 :: IO (Maybe a) -> Handler (Maybe a)
+    with404 f = do
+      v <- liftIO f
+      case v of
+        Just _  -> return v
+        Nothing -> throwError err404

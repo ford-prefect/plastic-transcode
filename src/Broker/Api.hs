@@ -50,7 +50,7 @@ jobServer pool = getJobsH
 
     dqJob :: IO (Maybe (Entity Job))
     -- FIXME: we want to make sure this is FIFO
-    dqJob = updateJobStateAtomic (\j -> j E.^. JobState E.==. E.val Queued) Queued
+    dqJob = updateJobStateAtomic (\j -> j E.^. JobState E.==. E.val Queued) (InProgress 0)
 
     updateJobState :: Key Job -> JobState -> IO (Maybe (Entity Job))
     updateJobState job = updateJobStateAtomic (\j -> (j E.^. JobId) E.==. (E.val job))

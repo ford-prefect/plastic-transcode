@@ -29,7 +29,6 @@ data JobResult = Success
                | Error String
                deriving (Eq, Generic, Read, Show)
 
-derivePersistField "JobResult"
 $(deriveJSON
   defaultOptions { fieldLabelModifier     = camelTo2 '-',
                    constructorTagModifier = camelTo2 '-',

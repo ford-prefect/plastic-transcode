@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE TemplateHaskell    #-}
 
-module Types where
+module Broker.Types where
 
 import Data.Aeson.TH
 import Data.Aeson.Types (camelTo2)
@@ -10,7 +10,7 @@ import Data.Aeson.Types as AT
 import Database.Persist.TH
 import GHC.Generics
 
-import Media
+import Broker.Media
 
 data JobParams = JobParams { inputUri  :: String
                            , outputUri :: String

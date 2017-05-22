@@ -8,7 +8,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 
-module Models where
+module Broker.Models where
 
 import Control.Applicative
 import Data.Aeson
@@ -22,7 +22,7 @@ import Database.Persist
 import Database.Persist.TH
 import GHC.Generics
 
-import Types
+import Broker.Types
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Job sql=jobs

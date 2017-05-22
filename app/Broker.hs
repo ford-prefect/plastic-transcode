@@ -9,8 +9,8 @@ import Database.Persist.Postgresql
 import Network.Wai.Handler.Warp
 import Servant
 
-import Api
-import Models
+import Broker.Api
+import Broker.Models
 
 type API = "jobs" :> JobAPI
 

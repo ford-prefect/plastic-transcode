@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module Api
+module Broker.Api
     ( JobAPI
     , jobServer
     ) where
@@ -14,8 +14,8 @@ import Database.Persist.Sql
 import qualified Database.Esqueleto as E
 import Servant
 
-import Models
-import Types
+import Broker.Models
+import Broker.Types
 
 type JobAPI = Get '[JSON] [Entity Job]                                     -- GET /
          :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)          -- POST /
@@ -71,7 +71,7 @@ jobServer pool = getJobsH
         Nothing -> return Nothing
         Just j  -> do
           update (entityKey j) [JobState =. newState]
-          return $ Just j { entityVal = (entityVal j) { jobState = newState } }
+          return $ Just j { entityVal = (entityVal j){ jobState = newState } }
 
     with404 :: IO (Maybe a) -> Handler (Maybe a)
     with404 f = do

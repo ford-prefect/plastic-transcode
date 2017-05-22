@@ -1,8 +1,8 @@
-name:                plastic-transcode-api
+name:                plastic-transcode
 version:             0.1.0.0
 synopsis:            API service for Plastic Transcode
 description:         Please see README.md
-homepage:            https://github.com/ford-prefect/plastic-transcode-api#readme
+homepage:            https://github.com/ford-prefect/plastic-transcode#readme
 license:             Apache-2.0
 license-file:        LICENSE
 author:              Arun Raghavan
@@ -15,10 +15,10 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Api
-                     , Media
-                     , Models
-                     , Types
+  exposed-modules:     Broker.Api
+                     , Broker.Media
+                     , Broker.Models
+  other-modules:       Broker.Types
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , containers
@@ -30,27 +30,27 @@ library
                      , unordered-containers
   default-language:    Haskell2010
 
-executable plastic-transcode-api-exe
+executable plastic-transcode-broker-exe
   hs-source-dirs:      app
-  main-is:             Main.hs
+  main-is:             Broker.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , monad-logger
-                     , plastic-transcode-api
+                     , plastic-transcode
                      , persistent-postgresql
                      , servant-server
                      , warp
   default-language:    Haskell2010
 
-test-suite plastic-transcode-api-test
+test-suite plastic-transcode-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , plastic-transcode-api
+                     , plastic-transcode
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head
   type:     git
-  location: https://github.com/ford-prefect/plastic-transcode-api
+  location: https://github.com/ford-prefect/plastic-transcode

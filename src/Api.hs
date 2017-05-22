@@ -17,12 +17,12 @@ import Servant
 import Models
 import Types
 
-type JobAPI = Get '[JSON] [Entity Job]                                   -- GET /
-         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)        -- POST /
-         :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job)) -- GET /<ID>
-         :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))              -- GET /dequeue
+type JobAPI = Get '[JSON] [Entity Job]                                     -- GET /
+         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)          -- POST /
+         :<|> Capture "id" (Key Job) :> Get '[JSON] (Maybe (Entity Job))   -- GET /<ID>
+         :<|> "dequeue" :> Get '[JSON] (Maybe (Entity Job))                -- GET /dequeue
          :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState
-                                     :> PatchNoContent '[JSON] NoContent -- PATCH /<ID>
+                                     :> Patch '[JSON] (Maybe (Entity Job)) -- PATCH /<ID>
 
 jobServer :: ConnectionPool -> Server JobAPI
 jobServer pool = getJobsH
@@ -35,7 +35,7 @@ jobServer pool = getJobsH
     newJobH             = liftIO . newJob
     getJobH             = with404 . getJob
     dqJobH              = with404 dqJob
-    updateJobStateH job = liftIO . updateJobState job
+    updateJobStateH job = with404 . updateJobState job
 
     getJobs :: IO [Entity Job]
     getJobs = runSqlPersistMPool (selectList [] []) pool
@@ -44,30 +44,34 @@ jobServer pool = getJobsH
     newJob params = runSqlPersistMPool (insert $ Job params Queued) pool
 
     getJob :: Key Job -> IO (Maybe (Entity Job))
-    getJob id = runSqlPersistMPool (fmap (Entity id) <$> get id) pool
+    getJob id = flip runSqlPersistMPool pool $ do
+      job <- get id
+      return $ (Entity id) <$> job
 
     dqJob :: IO (Maybe (Entity Job))
-    dqJob = runSqlPersistMPool doDq pool
-      where
-        doDq = do
-          -- FIXME: we want to make sure this is FIFO
-          job <- fmap listToMaybe $
-                   E.select $
-                   E.from $ \j -> do
-                     E.where_ $ (j E.^. JobState) E.==. E.val Queued
-                     E.limit 1
-                     E.locking E.ForUpdate
-                     return j
-          case job of
-            Nothing -> return Nothing
-            Just j  -> do
-              update (entityKey j) [JobState =. InProgress 0]
-              return $ Just j { entityVal = (entityVal j) { jobState = InProgress 0 } }
+    -- FIXME: we want to make sure this is FIFO
+    dqJob = updateJobStateAtomic (\j -> j E.^. JobState E.==. E.val Queued) Queued
 
-    updateJobState :: Key Job -> JobState -> IO NoContent
-    updateJobState id newState = do
-      runSqlPersistMPool (update id [JobState =. newState]) pool
-      return NoContent
+    updateJobState :: Key Job -> JobState -> IO (Maybe (Entity Job))
+    updateJobState job = updateJobStateAtomic (\j -> (j E.^. JobId) E.==. (E.val job))
+
+    updateJobStateAtomic :: (E.SqlExpr (Entity Job) -> E.SqlExpr (E.Value Bool))
+                         -> JobState
+                         -> IO (Maybe (Entity Job))
+    updateJobStateAtomic cond newState = flip runSqlPersistMPool pool $ do
+      job <- fmap listToMaybe $
+               E.select $
+               E.from $ \j -> do
+                 E.where_ (cond j)
+                 E.limit 1
+                 E.locking E.ForUpdate
+                 return j
+      -- FIXME: Prevent illegal state updates, such as Cancelled -> InProgress
+      case job of
+        Nothing -> return Nothing
+        Just j  -> do
+          update (entityKey j) [JobState =. newState]
+          return $ Just j { entityVal = (entityVal j) { jobState = newState } }
 
     with404 :: IO (Maybe a) -> Handler (Maybe a)
     with404 f = do

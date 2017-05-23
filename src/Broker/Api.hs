@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators     #-}
 
 module Broker.Api
-    ( JobAPI
+    ( jobApi
     , jobServer
     ) where
 
@@ -17,14 +17,19 @@ import Servant
 import Broker.Models
 import Broker.Types
 
-type JobAPI = Get '[JSON] [Entity Job]                             -- GET /
-         :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)  -- POST /
-         :<|> Capture "id" (Key Job) :> Get '[JSON] (Entity Job)   -- GET /<ID>
-         :<|> "dequeue" :> Get '[JSON] (Entity Job)                -- GET /dequeue
-         :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState
+type JobAPI = "jobs" :> JobAPI'
+
+jobApi :: Proxy JobAPI
+jobApi = Proxy
+
+type JobAPI' = Get '[JSON] [Entity Job]                             -- GET /
+          :<|> ReqBody '[JSON] JobParams :> Post '[JSON] (Key Job)  -- POST /
+          :<|> Capture "id" (Key Job) :> Get '[JSON] (Entity Job)   -- GET /<ID>
+          :<|> "dequeue" :> Get '[JSON] (Entity Job)                -- GET /dequeue
+          :<|> Capture "id" (Key Job) :> ReqBody '[JSON] JobState
                                      :> Patch '[JSON] (Entity Job) -- PATCH /<ID>
 
-jobServer :: ConnectionPool -> Server JobAPI
+jobServer :: ConnectionPool -> Server JobAPI'
 jobServer pool = getJobsH
             :<|> newJobH
             :<|> getJobH

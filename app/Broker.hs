@@ -12,13 +12,8 @@ import Servant
 import Broker.Api
 import Broker.Models
 
-type API = "jobs" :> JobAPI
-
-api :: Proxy API
-api = Proxy
-
 app :: ConnectionPool -> Application
-app pool = serve api $ jobServer pool
+app = serve jobApi . jobServer
 
 main :: IO ()
 main = do

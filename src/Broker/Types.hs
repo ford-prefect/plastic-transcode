@@ -21,8 +21,9 @@ data JobParams = JobParams { inputUri  :: String
                            } deriving (Eq, Generic, Read, Show)
 derivePersistFieldJSON "JobParams"
 $(deriveJSON
-  defaultOptions { fieldLabelModifier     = camelTo2 '-',
-                   constructorTagModifier = camelTo2 '-' }
+  defaultOptions { fieldLabelModifier     = camelTo2 '-'
+                 , constructorTagModifier = camelTo2 '-'
+                 }
   ''JobParams)
 
 data JobResult = Success
@@ -30,9 +31,10 @@ data JobResult = Success
                deriving (Eq, Generic, Read, Show)
 
 $(deriveJSON
-  defaultOptions { fieldLabelModifier     = camelTo2 '-',
-                   constructorTagModifier = camelTo2 '-',
-                   sumEncoding            = AT.UntaggedValue }
+  defaultOptions { fieldLabelModifier     = camelTo2 '-'
+                 , constructorTagModifier = camelTo2 '-'
+                 , sumEncoding            = AT.UntaggedValue
+                 }
   ''JobResult)
 
 data JobState = Queued
@@ -42,7 +44,8 @@ data JobState = Queued
               deriving (Eq, Generic, Read, Show)
 derivePersistField "JobState"
 $(deriveJSON
-  defaultOptions { fieldLabelModifier     = camelTo2 '-',
-                   constructorTagModifier = camelTo2 '-',
-                   sumEncoding            = AT.UntaggedValue }
+  defaultOptions { fieldLabelModifier     = camelTo2 '-'
+                 , constructorTagModifier = camelTo2 '-'
+                 , sumEncoding            = AT.UntaggedValue
+                 }
   ''JobState)

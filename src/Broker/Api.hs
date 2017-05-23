@@ -46,14 +46,14 @@ jobServer pool = getJobsH
     getJob :: Key Job -> IO (Maybe (Entity Job))
     getJob id = flip runSqlPersistMPool pool $ do
       job <- get id
-      return $ (Entity id) <$> job
+      return $ Entity id <$> job
 
     dqJob :: IO (Maybe (Entity Job))
     -- FIXME: we want to make sure this is FIFO
     dqJob = updateJobStateAtomic (\j -> j E.^. JobState E.==. E.val Queued) (InProgress 0)
 
     updateJobState :: Key Job -> JobState -> IO (Maybe (Entity Job))
-    updateJobState job = updateJobStateAtomic (\j -> (j E.^. JobId) E.==. (E.val job))
+    updateJobState job = updateJobStateAtomic (\j -> (j E.^. JobId) E.==. E.val job)
 
     updateJobStateAtomic :: (E.SqlExpr (Entity Job) -> E.SqlExpr (E.Value Bool))
                          -> JobState

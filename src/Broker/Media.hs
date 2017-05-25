@@ -31,14 +31,13 @@ $(deriveJSON
   ''VideoCodec)
 
 -- Unless otherwise specified, a Nothing parameter impliess passthrough (i.e. use source value)
-data VideoParams = VideoParams { videoParamsCodec      :: VideoCodec
-                               , videoParamsWidth      :: Maybe Int
-                               , videoParamsHeight     :: Maybe Int
-                               , videoParamsFramerateN :: Maybe Int
-                               , videoParamsFramerateD :: Maybe Int
-                               , videoParamsBitrate    :: Maybe Int
-                               , videoParamsExtra      :: M.Map T.Text T.Text
-                               , videoParamsPreset     :: Maybe String
+data VideoParams = VideoParams { videoParamsCodec     :: VideoCodec
+                               , videoParamsWidth     :: Maybe Int
+                               , videoParamsHeight    :: Maybe Int
+                               , videoParamsFramerate :: Maybe (Int, Int)
+                               , videoParamsBitrate   :: Maybe Int
+                               , videoParamsExtra     :: M.Map T.Text T.Text
+                               , videoParamsPreset    :: Maybe String
                                } deriving (Eq, Generic, Read, Show)
 $(deriveJSON
   defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}

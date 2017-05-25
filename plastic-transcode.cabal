@@ -33,7 +33,7 @@ library
 executable plastic-transcode-broker-exe
   hs-source-dirs:      app
   main-is:             Broker.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , monad-logger
                      , plastic-transcode
@@ -48,7 +48,7 @@ test-suite plastic-transcode-test
   main-is:             Spec.hs
   build-depends:       base
                      , plastic-transcode
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   default-language:    Haskell2010
 
 source-repository head

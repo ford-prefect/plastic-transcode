@@ -44,7 +44,7 @@ $(deriveJSON
   defaultOptions{fieldLabelModifier = camelTo2 '-' . drop 11, constructorTagModifier = camelTo2 '-'}
   ''VideoParams)
 
-data AudioCodec = AAC | FLAC | MP3 | MPEG2 | OPUS | VORBIS
+data AudioCodec = AAC | FLAC | MP3 | OPUS | VORBIS
                  deriving (Eq, Generic, Read, Show)
 $(deriveJSON
   defaultOptions{fieldLabelModifier = map toLower . drop 10, constructorTagModifier = camelTo2 '-'}

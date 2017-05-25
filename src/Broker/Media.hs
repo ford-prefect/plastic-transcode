@@ -31,7 +31,7 @@ $(deriveJSON
   ''VideoCodec)
 
 -- Unless otherwise specified, a Nothing parameter impliess passthrough (i.e. use source value)
-data VideoParams = VideoParams { videoParamsCodec      :: Maybe VideoCodec
+data VideoParams = VideoParams { videoParamsCodec      :: VideoCodec
                                , videoParamsWidth      :: Maybe Int
                                , videoParamsHeight     :: Maybe Int
                                , videoParamsFramerateN :: Maybe Int
@@ -51,7 +51,7 @@ $(deriveJSON
   ''AudioCodec)
 
 -- Unless otherwise specified, a Nothing parameter impliess passthrough (i.e. use source value)
-data AudioParams = AudioParams { audioParamsCodec    :: Maybe AudioCodec
+data AudioParams = AudioParams { audioParamsCodec    :: AudioCodec
                                , audioParamsRate     :: Maybe Int
                                , audioParamsChannels :: Maybe Int
                                , audioParamsBitDepth :: Maybe Int

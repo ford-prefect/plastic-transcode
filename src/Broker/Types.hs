@@ -26,8 +26,20 @@ $(deriveJSON
                  }
   ''JobParams)
 
+data JobErrorCode = BadParameter
+               | TranscodeFailed
+               | UnknownError
+               deriving (Eq, Generic, Read, Show)
+$(deriveJSON
+  defaultOptions { fieldLabelModifier     = camelTo2 '-'
+                 , constructorTagModifier = camelTo2 '-'
+                 , sumEncoding            = AT.UntaggedValue
+                 }
+  ''JobErrorCode)
+
 data JobResult = Success
-               | Error String
+               | Error { errorCode :: JobErrorCode
+                       , errorMsg  :: String }
                deriving (Eq, Generic, Read, Show)
 
 $(deriveJSON

@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-8.15
+resolver: lts-9.3
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,12 +40,12 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps: [
-    gi-gst-1.0.12,
-    gi-gstbase-1.0.13,
-    gi-gstaudio-1.0.12,
-    gi-gstvideo-1.0.12,
-    gi-gsttag-1.0.12,
-    gi-gstpbutils-1.0.12,
+    gi-gst-1.0.14,
+    gi-gstbase-1.0.15,
+    gi-gstaudio-1.0.14,
+    gi-gstvideo-1.0.14,
+    gi-gsttag-1.0.14,
+    gi-gstpbutils-1.0.14,
   ]
 
 # Override default flag values for local packages and extra-deps

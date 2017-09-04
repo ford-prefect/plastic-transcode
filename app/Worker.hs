@@ -48,9 +48,9 @@ getQueuedJob :: Manager -> IO Bool
 getQueuedJob manager = do
   res <- runClientM dequeueJob (clientEnv manager)
   case res of
-    Left (FailureResponse s _ _) | is404 s -> return True
-    Left err                               -> hPrint stderr err $> True
-    Right (Job jId params _)               -> processJob manager jId params $> True
+    Left (FailureResponse _ s _ _) | is404 s -> return True
+    Left err                                 -> hPrint stderr err $> True
+    Right (Job jId params _)                 -> processJob manager jId params $> True
   where
     is404 (Status code _) = code == 404
 

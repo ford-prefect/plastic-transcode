@@ -1,13 +1,13 @@
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE OverloadedLabels     #-}
-{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedLabels  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Worker.Transcode
     ( runTranscode
     ) where
 
 import Control.Monad (void, when)
-import Data.Foldable (find)
+import Data.Foldable ()
 import Data.Maybe (fromJust, fromMaybe, isNothing)
 import qualified Data.Text as T
 
@@ -25,7 +25,7 @@ runTranscode :: GLib.MainLoop
              -> GstPbutils.EncodingProfile
              -> (JobState -> IO ())
              -> IO ()
-runTranscode loop inUri outUri profile updateState = do
+runTranscode loop inUri outUri profil updateState = do
   pipeline     <- new Gst.Pipeline [ #name := "transcoder" ]
 
   uridecodebin <- Gst.elementFactoryMake "uridecodebin" (Just "uridecodebin")
@@ -43,10 +43,10 @@ runTranscode loop inUri outUri profile updateState = do
       sink'         = sink
     in do
       setObjectPropertyString uridecodebin' "uri" (Just . T.pack $ inUri)
-      setObjectPropertyObject encodebin' "profile" (Just profile)
+      setObjectPropertyObject encodebin' "profile" (Just profil)
 
-      bus        <- #getBus pipeline
-      busWatchId <- #addWatch bus GLib.PRIORITY_DEFAULT (busWatch updateState loop pipeline)
+      bus <- #getBus pipeline
+      void $ #addWatch bus GLib.PRIORITY_DEFAULT (busWatch updateState loop pipeline)
 
       mapM_ (#add pipeline) [uridecodebin', encodebin', sink']
 
@@ -61,42 +61,42 @@ runTranscode loop inUri outUri profile updateState = do
       else
         return ()
 
-    where
-      busWatch updateState loop pipeline bus message = do
-        messageType <- Gst.getMessageType message
+busWatch :: (JobState -> IO ()) -> GLib.MainLoop -> Gst.Pipeline -> Gst.Bus -> Gst.Message -> IO Bool
+busWatch updateState loop pipeline _ message = do
+  messageType <- Gst.getMessageType message
 
-        when (Gst.MessageTypeEos `elem` messageType) $ do
-          updateState (Complete Success)
-          quitLoop loop pipeline
+  when (Gst.MessageTypeEos `elem` messageType) $ do
+    updateState (Complete Success)
+    quitLoop loop pipeline
 
-        when (Gst.MessageTypeError `elem` messageType) $ do
-          (gerror, _) <- #parseError message
-          errorMsg    <- Gst.gerrorMessage gerror
-          updateState (Complete $ Error TranscodeFailed (T.unpack errorMsg))
-          quitLoop loop pipeline
+  when (Gst.MessageTypeError `elem` messageType) $ do
+    (gerror, _) <- #parseError message
+    err         <- Gst.gerrorMessage gerror
+    updateState (Complete $ Error TranscodeFailed $ T.unpack err)
+    quitLoop loop pipeline
 
-        -- FIXME: implement progress reporting
+  -- FIXME: implement progress reporting
 
-        return True
+  return True
 
-      onDecodePadAdded :: Gst.Element -> Gst.Pad -> IO ()
-      onDecodePadAdded encodebin pad = do
-        -- At this point, we know the pad has some fixed caps
-        caps <- fromMaybe (error "Should have had fixed caps") <$> #getCurrentCaps pad
-        st   <- #getStructure caps 0
-        name <- #getName st
+onDecodePadAdded :: Gst.Element -> Gst.Pad -> IO ()
+onDecodePadAdded encodebin pad = do
+  -- At this point, we know the pad has some fixed caps
+  caps <- fromMaybe (error "Should have had fixed caps") <$> #getCurrentCaps pad
+  st   <- #getStructure caps 0
+  name <- #getName st
 
-        when ("audio/" `T.isPrefixOf` name) $ do
-          sinkpad <- #getRequestPad encodebin "audio_%u"
-          void $ #link pad (fromMaybe (error "Could not get audio sink pad") sinkpad)
+  when ("audio/" `T.isPrefixOf` name) $ do
+    sinkpad <- #getRequestPad encodebin "audio_%u"
+    void $ #link pad (fromMaybe (error "Could not get audio sink pad") sinkpad)
 
-        when ("video/" `T.isPrefixOf` name) $ do
-          sinkpad <- #getRequestPad encodebin "video_%u"
-          void $ #link pad (fromMaybe (error "Could not get video sink pad") sinkpad)
+  when ("video/" `T.isPrefixOf` name) $ do
+    sinkpad <- #getRequestPad encodebin "video_%u"
+    void $ #link pad (fromMaybe (error "Could not get video sink pad") sinkpad)
 
-        return ()
+  return ()
 
-      quitLoop :: GLib.MainLoop -> Gst.Pipeline -> IO ()
-      quitLoop loop pipeline = do
-        void $ #setState pipeline Gst.StateNull
-        #quit loop
+quitLoop :: GLib.MainLoop -> Gst.Pipeline -> IO ()
+quitLoop loop pipeline = do
+  void $ #setState pipeline Gst.StateNull
+  #quit loop
